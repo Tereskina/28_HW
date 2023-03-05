@@ -16,15 +16,15 @@ class Category(models.Model):
         return self.name
 
 
-class Ads(models.Model):
-    # slug = models.SlugField(max_length=50)
+class Ad(models.Model):
+    slug = models.SlugField(max_length=50)
     name = models.CharField(max_length=100, unique=True)
     author = models.ForeignKey(User, verbose_name='Автор', related_name='ads', on_delete=models.CASCADE)
     price = models.PositiveIntegerField()
     description = models.TextField(max_length=2000, null=True)
     is_published = models.BooleanField(default=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    # address = models.CharField(max_length=100)
+    address = models.CharField(max_length=100)
     image = models.ImageField(upload_to='pictures', null=True, blank=True)
 
     class Meta:
