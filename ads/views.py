@@ -12,8 +12,7 @@ from ads.models import Ads, Categories
 
 
 def index(request):
-    if request.method == "GET":
-        return JsonResponse({"status": "ok"}, status=200)
+    return JsonResponse({"status": "ok"}, status=200)
 
 
 @method_decorator(csrf_exempt, name="dispatch")
