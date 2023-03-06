@@ -83,11 +83,9 @@ class AdDetailView(DetailView):
 
         return JsonResponse({
             'id': ad.pk,
-            'slug': ad.slug,
             'name': ad.name,
             'author': ad.author.username,
             'category': ad.category.name,
-            'address': ad.address,
             'price': ad.price,
             'description': ad.description,
             'is_published': ad.is_published,
@@ -138,12 +136,14 @@ class AdDeleteView(DeleteView):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class AdUploadImageView(UpdateView):
+class AdImageView(UpdateView):
     model = Ad
-    fields = ['name']
+    fields = ['name', 'image']
 
     def post(self, request, *args, **kwargs) -> JsonResponse:
         self.object = self.get_object()
+
+        # self.object.image = request.FILES.get('image')
         self.object.image = request.FILES.get('image')
         self.object.save()
 
@@ -156,4 +156,4 @@ class AdUploadImageView(UpdateView):
             'category': self.object.category.name,
             'is_published': self.object.is_published,
             'image': self.object.image.url if self.object.image else None
-        }, safe=False)
+        })
