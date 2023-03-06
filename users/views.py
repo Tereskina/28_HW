@@ -2,6 +2,7 @@ import json
 
 from django.core.paginator import Paginator
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, CreateView, ListView, UpdateView, DeleteView
@@ -41,10 +42,11 @@ class UserListView(ListView):
 
 
 class UserDetailView(DetailView):
-    madel = User
+    model = User
 
     def get(self, request, *args, **kwargs) -> JsonResponse:
         user = self.get_object()
+
         return JsonResponse(
             {
                 'id': user.pk,
@@ -126,14 +128,14 @@ class UserCreateView(CreateView):
                 loc, _ = Location.objects.get_or_create(name=loc_name)
                 user.location.add(loc)
 
-        return JsonResponse(
-            {
-                'id': user.pk,
-                'username': user.username,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'role': user.role,
-                'age': user.age,
-                'location': list(map(str, user.location.all())),
-                'total_ads': user.ads.filter(is_published=True).count()
-            }, safe=False)
+        return JsonResponse({
+            'id': user.pk,
+            'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': user.role,
+            'age': user.age,
+            'location': list(map(str, user.location.all())),
+            'total_ads': user.ads.filter(is_published=True).count()
+        }, safe=False)
+
