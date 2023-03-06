@@ -63,37 +63,34 @@ class UserDetailView(DetailView):
 @method_decorator(csrf_exempt, name='dispatch')
 class UserUpdateView(UpdateView):
     model = User
-    fields = ['username']
+    fields = ["username", "password", "first_name", "last_name", "role", "age", "location"]
 
     def patch(self, request, *args, **kwargs):
         super().post(request, *args, **kwargs)
-        data = json.loads(request.body)
 
-        if 'first_name' in data:
-            self.object.first_name = data['first_name']
-        if 'last_name' in data:
-            self.object.last_name = data['last_name']
-        if 'age' in data:
-            self.object.age = data['age']
-        if 'role' in data:
-            self.object.role = data['role']
-        if 'location' in data:
-            for loc_name in data['location']:
-                loc, _ = Location.objects.get_or_create(name=loc_name)
-                self.object.location.add(loc)
+        user_data = json.loads(request.body)
+        self.object.username = user_data["username"]
+        self.object.password = user_data["password"]
+        self.object.first_name = user_data["first_name"]
+        self.object.last_name = user_data["last_name"]
+        self.object.age = user_data["age"]
+
+        for location_name in user_data["location"]:
+            loc, _ = Location.objects.get_or_create(name=location_name)
+            self.object.location.add(loc)
+
         self.object.save()
+        return JsonResponse({
+            "id": self.object.id,
+            "username": self.object.username,
+            "first_name": self.object.first_name,
+            "last_name": self.object.last_name,
+            "role": self.object.role,
+            "age": self.object.age,
+            "location": list(map(str, self.object.location.all())),
+            'total_ads': self.object.ads.filter(is_published=True).count()
+        }, safe=False)
 
-        return JsonResponse(
-            {
-                'id': self.object.pk,
-                'username': self.object.username,
-                'first_name': self.object.first_name,
-                'last_name': self.object.last_name,
-                'role': self.object.role,
-                'age': self.object.age,
-                'location': list(map(str, self.object.location.all())),
-                'total_ads': self.object.ads.filter(is_published=True).count()
-            }, safe=False)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -111,22 +108,23 @@ class UserDeleteView(DeleteView):
 @method_decorator(csrf_exempt, name='dispatch')
 class UserCreateView(CreateView):
     model = User
-    fields = ['username']
+    fields = ['username', "password", "first_name", "last_name", "role", "age", "locations"]
 
     def post(self, request, *args, **kwargs):
+        user_data = json.loads(request.body)
 
-        data = json.loads(request.body)
         user = User.objects.create(
-            username=data['username'],
-            first_name=data['first_name'],
-            last_name=data['last_name'],
-            age=data['age'],
-            role=data['role']
+            username=user_data['username'],
+            password=user_data["password"],
+            first_name=user_data['first_name'],
+            last_name=user_data['last_name'],
+            age=user_data['age'],
+            role=user_data['role']
         )
-        if 'location' in data:
-            for loc_name in data['location']:
-                loc, _ = Location.objects.get_or_create(name=loc_name)
-                user.location.add(loc)
+
+        for location_name in user_data["locations"]:
+            location, _ = Location.objects.get_or_create(name=location_name)
+            user.location.add(location)
 
         return JsonResponse({
             'id': user.pk,
